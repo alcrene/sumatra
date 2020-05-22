@@ -70,7 +70,7 @@ def system2(cmd, cwd=None, logger=_sentinel, stdout=_sentinel, log_command=_sent
         This method return (returncode, output_lines_as_list)
 
         """
-        t = time.clock()
+        t = time.process_time()
         output = []
         if log_command is _sentinel: log_command = globals().get('log_command')
         if timing is _sentinel: timing = globals().get('timing')
@@ -164,7 +164,7 @@ def system2(cmd, cwd=None, logger=_sentinel, stdout=_sentinel, log_command=_sent
                         def secondsToStr(t):
                                 from functools import reduce
                                 return "%02d:%02d:%02d" % reduce(lambda ll,b : divmod(ll[0],b) + ll[1:], [(t*1000,),1000,60,60])[:3]
-                        mylogger("Returned: %d (execution time %s)\n" % (returncode, secondsToStr(time.clock()-t)))
+                        mylogger("Returned: %d (execution time %s)\n" % (returncode, secondsToStr(time.process_time()-t)))
                 else:
                         mylogger("Returned: %d\n" % (returncode))
 
