@@ -23,9 +23,9 @@ def check_name(f):
     before calling the wrapped method. See http://bugs.python.org/issue1036490
     """
 
-    def wrapped(self, project_name, *args):
+    def wrapped(self, project_name, *args, **kwargs):
         project_name = project_name.__str__()
-        return f(self, project_name, *args)
+        return f(self, project_name, *args, **kwargs)
     return wrapped
 
 
@@ -77,6 +77,7 @@ class ShelveRecordStore(RecordStore):
             records = {}
         records[record.label] = record
         self.shelf[project_name] = records
+        self.shelf.sync()  # At least some backends don't immediately write to disk, even when writeback=False
 
     @check_name
     def get(self, project_name, label):
