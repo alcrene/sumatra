@@ -23,9 +23,9 @@ def check_name(f):
     before calling the wrapped method. See http://bugs.python.org/issue1036490
     """
 
-    def wrapped(self, project_name, *args):
+    def wrapped(self, project_name, *args, **kwargs):
         project_name = project_name.__str__()
-        return f(self, project_name, *args)
+        return f(self, project_name, *args, **kwargs)
     return wrapped
 
 
