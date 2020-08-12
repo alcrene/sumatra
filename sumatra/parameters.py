@@ -218,7 +218,7 @@ class NTParameterSet(parameters.ParameterSet, ParameterSet):
 
     def save(self, filename, add_extension=False):
         if add_extension:
-            filename += ".params"
+            filename += ".paramset"
         super().save(filename)
         return filename
 
