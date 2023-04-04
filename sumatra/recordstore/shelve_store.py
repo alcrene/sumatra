@@ -77,6 +77,7 @@ class ShelveRecordStore(RecordStore):
             records = {}
         records[record.label] = record
         self.shelf[project_name] = records
+        self.shelf.sync()  # At least some backends don't immediately write to disk, even when writeback=False
 
     @check_name
     def get(self, project_name, label):
