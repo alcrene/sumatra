@@ -1,8 +1,6 @@
 """
 Unit tests for the sumatra.versioncontrol package
 """
-from __future__ import with_statement
-from __future__ import unicode_literals
 from builtins import str
 from builtins import object
 
@@ -437,8 +435,9 @@ class TestPackageFunctions(unittest.TestCase):
         if have_pysvn:
             repos = get_repository("file://%s/subversion" % self.basepath)
             assert isinstance(repos, SubversionRepository)
-        repos = get_repository("file://%s/mercurial" % self.basepath)
-        assert isinstance(repos, MercurialRepository), type(repos)
+        if have_hg:
+            repos = get_repository("file://%s/mercurial" % self.basepath)
+            assert isinstance(repos, MercurialRepository), type(repos)
 
     def test__get_repository__from_invalid_url_should_raise_Exception(self):
         self.assertRaises(VersionControlError, get_repository, "file:///tmp/iugnoirutgvnir")

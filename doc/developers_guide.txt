@@ -14,7 +14,6 @@ Requirements
     * django-tagging_ >= 0.3
     * parameters >= 0.2.1
     * nose_ >= 0.11.4
-    * future >= 0.14
     * if using Python < 3.4, pathlib >= 1.0.0
     * docutils
     * Jinja2

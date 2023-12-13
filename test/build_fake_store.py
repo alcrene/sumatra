@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from builtins import range
 from sumatra.projects import Project
 from sumatra.records import Record
