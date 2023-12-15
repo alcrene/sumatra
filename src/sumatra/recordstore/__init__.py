@@ -23,11 +23,9 @@ try:
     have_django = True
 except ImportError:
     have_django = False
-try:
-    import httplib2
+from .http_store import have_http
+if have_http:
     from .http_store import HttpRecordStore
-except ImportError:
-    pass
 
 from ..core import get_registered_components
 

@@ -70,6 +70,7 @@ setup(
                       'git': 'GitPython',
                       'bzr': 'bzr',
                       'mpi': 'mpi4py',
+                      'http': 'httplib2',  # Used by HttpRecordstore
                       'django': ['Django>=1.8, <2', 'django-tagging']
                       }
 )
