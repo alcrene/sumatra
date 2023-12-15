@@ -15,19 +15,6 @@ from .base import RecordStore
 from ..core import component
 
 
-def check_name(f):
-    """
-    Some backends to shelve do not accept unicode variables as keys.
-    This decorator therefore converts a unicode project_name to a string
-    before calling the wrapped method. See http://bugs.python.org/issue1036490
-    """
-
-    def wrapped(self, project_name, *args):
-        project_name = project_name.__str__()
-        return f(self, project_name, *args)
-    return wrapped
-
-
 @component
 class ShelveRecordStore(RecordStore):
     """
@@ -69,7 +56,6 @@ class ShelveRecordStore(RecordStore):
     def has_project(self, project_name):
         return project_name in self.shelf
 
-    @check_name
     def save(self, project_name, record):
         if project_name in self.shelf:
             records = self.shelf[project_name]
@@ -79,11 +65,9 @@ class ShelveRecordStore(RecordStore):
         self.shelf[project_name] = records
         self.shelf.sync()  # At least some backends don't immediately write to disk, even when writeback=False
 
-    @check_name
     def get(self, project_name, label):
         return self.shelf[project_name][label]
 
-    @check_name
     def list(self, project_name, tags=None):
         if project_name in self.shelf:
             if tags:
@@ -97,7 +81,6 @@ class ShelveRecordStore(RecordStore):
             records = []
         return records
 
-    @check_name
     def labels(self, project_name, tags=None):
         if project_name in self.shelf:
             if tags:
@@ -111,20 +94,17 @@ class ShelveRecordStore(RecordStore):
             lbls = []
         return lbls
 
-    @check_name
     def delete(self, project_name, label):
         records = self.shelf[project_name]
         records.pop(label)
         self.shelf[project_name] = records
 
-    @check_name
     def delete_by_tag(self, project_name, tag):
         for_deletion = [record for record in self.shelf[project_name].values() if tag in record.tags]
         for record in for_deletion:
             self.delete(project_name, record.label)
         return len(for_deletion)
 
-    @check_name
     def most_recent(self, project_name):
         most_recent = None
         most_recent_timestamp = datetime.min
