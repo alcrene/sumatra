@@ -128,10 +128,7 @@ def system2(cmd, cwd=None, logger=_sentinel, stdout=_sentinel, log_command=_sent
         if cwd is not None and not os.path.isdir(cwd):
                 os.makedirs(cwd) # this throws exception if fails
 
-        if catch_stderr:
-                stderr = subprocess.STDOUT
-        else:
-                stderr = False
+        stderr = subprocess.STDOUT if catch_stderr else False
 
         # samarkanov: commented 'quote_command' deliberately
         # reason: if I have 'quote_command' Sumatra does not work in Windows (it encloses the command in quotes. I did not understand why should we quote)
