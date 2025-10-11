@@ -162,6 +162,7 @@ def init(argv):
     parser.add_argument('-t', '--timestamp_format', help="the timestamp format given to strftime for generating labels", default=TIMESTAMP_FORMAT)
     parser.add_argument('-L', '--launch_mode', choices=['serial', 'distributed', 'slurm-mpi'], default='serial', help="how computations should be launched. Defaults to %(default)s")
     parser.add_argument('-o', '--launch_mode_options', help="extra options for the given launch mode")
+    parser.add_argument('--dirty-directories', nargs="*", default=[], help="Set the list of dirty directories; specify each directory as a separate argument.")
 
     datastore = parser.add_mutually_exclusive_group()
     datastore.add_argument('-W', '--webdav', metavar='URL', help="specify a webdav URL (with username@password: if needed) as the archiving location for data")
@@ -232,7 +233,8 @@ def init(argv):
                       data_label=args.addlabel,
                       input_datastore=input_datastore,
                       label_generator=args.labelgenerator,
-                      timestamp_format=args.timestamp_format)
+                      timestamp_format=args.timestamp_format,
+                      dirty_directories=args.dirty_directories)
     if os.path.exists('.smt') and project.record_store.has_project(project.name):
         with open('.smt/labels', 'w') as f:
             f.write('\n'.join(project.get_labels()))
@@ -270,6 +272,8 @@ def configure(argv):
 
     parser.add_argument('--add-plugin', help="name of a Python module containing one or more plug-ins.")
     parser.add_argument('--remove-plugin', help="name of a plug-in module to remove from the project.")
+    parser.add_argument('--add-dirty-dir', default=[], action='append', help="add a directory to the list of dirty directories. Can be specified multiple times.")
+    parser.add_argument('--remove-dirty-dir', default=[], action='append', help="remove a directory from the list of dirty directories. Can be specified multiple times.")
 
     args = parser.parse_args(argv)
 
@@ -337,6 +341,23 @@ def configure(argv):
         project.load_plugins(args.add_plugin)
     if args.remove_plugin:
         project.remove_plugins(args.remove_plugin)
+    # Update dirty directories
+    if args.add_dirty_dir and getattr(project, "dirty_directories", None) is None:
+        project.dirty_directories = []
+    project.dirty_directories.extend(args.add_dirty_dir)
+    if getattr(project, "dirty_directories", None) is None:
+        invalid_dirs = args.remove_dirty_dir
+    else:
+        invalid_dirs = []
+        for dirty_dir in args.remove_dirty_dir:
+            try:
+                project.dirty_directories.remove(dirty_dir)
+            except ValueError:
+                invalid_dirs.append(dirty_dir)
+    if invalid_dirs:
+        print("The following dirty directories were not removed because they did not match one of "
+              f"the directories in the project configuration file:\n  {invalid_dirs}")
+    # Save
     project.save()
 
 

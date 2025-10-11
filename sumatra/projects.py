@@ -80,7 +80,12 @@ class Project(object):
                  input_datastore=None, label_generator='timestamp',
                  timestamp_format=TIMESTAMP_FORMAT,
                  allow_command_line_parameters=True,
-                 ignore_parameters=False, plugins=[]):
+                 ignore_parameters=False, plugins=[],
+                 dirty_directories: list[str]=None
+                 ):
+        """
+        dirty_directories: Directories within which uncommitted changes are permitted.
+        """
         self.path = os.getcwd()
         if not os.path.exists(".smt"):
             os.mkdir(".smt")
@@ -112,6 +117,7 @@ class Project(object):
         self._most_recent = None
         self.plugins = []
         self.load_plugins(*plugins)
+        self.dirty_directories = dirty_directories or []
         self.save()
         print("Sumatra project successfully set up")
 
@@ -132,7 +138,7 @@ class Project(object):
                      'data_label', '_most_recent', 'input_datastore',
                      'label_generator', 'timestamp_format', 'sumatra_version',
                      'allow_command_line_parameters', 'ignore_parameters',
-                     'plugins'):
+                     'plugins', 'dirty_directories'):
             try:
                 attr = getattr(self, name)
             except:
@@ -175,6 +181,7 @@ class Project(object):
         Label generator     : %(label_generator)s
         Timestamp format    : %(timestamp_format)s
         Plug-ins            : %(plugins)s
+        Dirty directories   : %(dirty_directories)s
         Sumatra version     : %(sumatra_version)s
         """
         return _remove_left_margin(template % self.__dict__)
@@ -235,9 +242,8 @@ class Project(object):
         # we really need to extend this to the dependencies, but we need to take extra special care that the
         # code ends up in the same condition as before the run
         logger.debug("Updating working copy to use version: %s" % version)
-        changed = working_copy.has_changed()
         if (version == 'current' or version == working_copy.current_version) and not diff:
-            if changed:
+            if working_copy.has_changed(ignored_paths=self.dirty_directories):
                 if self.on_changed == "error":
                     raise UncommittedModificationsError("Code has changed, please commit your changes")
                 elif self.on_changed == "store-diff":
@@ -245,18 +251,18 @@ class Project(object):
                 else:
                     raise ValueError("store-diff must be either 'error' or 'store-diff'")
         elif diff:
-            if changed:
+            if working_copy.has_changed():  # NB: We don’t allow changes even in dirty directories, since they would be overwritten
                 raise UncommittedModificationsError(
                     "Code has changed. These changes will be lost when switching "
                     "to a different version, so please commit or stash your "
                     "changes and then retry.")
             else:
-                working_copy.use_version(version)
+                working_copy.use_version(version)  # NB: Checks .has_changed()
                 working_copy.patch(diff)
         elif version == 'latest':
-            working_copy.use_latest_version()
+            working_copy.use_latest_version()      # NB: Checks .has_changed()
         else:
-            working_copy.use_version(version)
+            working_copy.use_version(version)      # NB: Checks .has_changed()
         version = working_copy.current_version()
         return version, diff
 
